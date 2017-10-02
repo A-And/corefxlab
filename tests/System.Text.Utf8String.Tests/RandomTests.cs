@@ -872,13 +872,6 @@ namespace System.Text.Utf8.Tests
             Assert.Throws<ArgumentNullException>(() => { Utf8String utf8String = new Utf8String((string)null); });
         }
 
-        [Fact]
-        public void ConstructingFromUtf16StringWithEmptyStringDoesNotAllocate()
-        {
-            Assert.True((new Utf8String("")).ReferenceEquals(Utf8String.Empty));
-            Assert.True((new Utf8String(string.Empty)).ReferenceEquals(Utf8String.Empty));
-        }
-
         public static IEnumerable<object[]> TryComputeEncodedBytesShouldMatchEncoding_Strings()
         {
             string[] data =

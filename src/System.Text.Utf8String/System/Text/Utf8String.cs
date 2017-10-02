@@ -64,7 +64,7 @@ namespace System.Text.Utf8
 
             if (s == string.Empty)
             {
-                // Might not be correct?
+                // Might not be the correct approach
                 _buffer = new byte[0];
             }
             else
@@ -72,13 +72,7 @@ namespace System.Text.Utf8
                 _buffer = GetUtf8BytesFromString(s);
             }
         }
-
-        // Empty constructor - used to initialize s_empty
-        private Utf8String()
-        {
-            _buffer = new byte[0];
-        }
-
+        
         /// <summary>
         /// This constructor is for use by the compiler.
         /// </summary>
