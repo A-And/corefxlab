@@ -9,7 +9,6 @@ using System.Text.Formatting;
 using System.Text.Utf8;
 using System.Text.Http;
 using System.Threading.Tasks;
-using System.Text;
 using System.Threading;
 using System.Buffers.Text;
 
@@ -62,7 +61,7 @@ namespace Microsoft.Net.Http
                 OwnedBuffer requestBuffer = rootBuffer;
                 int totalWritten = 0;
                 while (true) {
-                    Span<byte> requestSpan = requestBuffer.AsSpan();
+                    Span<byte> requestSpan = requestBuffer.Span;
 
                     int requestBytesRead = socket.Receive(requestSpan);
                     if (requestBytesRead == 0) {

@@ -51,26 +51,14 @@ namespace System.IO.Pipelines
             End = 0;
 
             _owned.Retain();
-            _buffer = _owned.AsMemory;
+            _buffer = _owned.Memory;
         }
 
-        public BufferSegment(OwnedMemory<byte> buffer, int start, int end)
+        public BufferSegment(OwnedMemory<byte> buffer, int start, int end): this(buffer)
         {
-            _owned = buffer;
             Start = start;
             End = end;
             ReadOnly = true;
-
-            // For unowned buffers, we need to make a copy here so that the caller can
-            // give up the give this buffer back to the caller
-            var unowned = buffer as UnownedBuffer;
-            if (unowned != null)
-            {
-                _owned = unowned.MakeCopy(start, end - start, out Start, out End);
-            }
-
-            _owned.Retain();
-            _buffer = _owned.AsMemory;
         }
 
         public Memory<byte> Buffer => _buffer;
@@ -96,7 +84,6 @@ namespace System.IO.Pipelines
             _owned.Release();
         }
 
-
         /// <summary>
         /// ToString overridden for debugger convenience. This displays the "active" byte information in this block as ASCII characters.
         /// </summary>
@@ -104,7 +91,7 @@ namespace System.IO.Pipelines
         public override string ToString()
         {
             var builder = new StringBuilder();
-            var data = _owned.AsMemory.Slice(Start, ReadableBytes).Span;
+            var data = _owned.Memory.Slice(Start, ReadableBytes).Span;
 
             for (int i = 0; i < ReadableBytes; i++)
             {

@@ -7,7 +7,6 @@ using System.Buffers;
 using System.Buffers.Text;
 using System.Linq;
 using System.Net.Libuv;
-using System.Text;
 using System.Text.Formatting;
 using System.Text.Utf8;
 using System.Threading.Tasks;
@@ -96,7 +95,7 @@ namespace LibuvWithNonAllocatingFormatters
 
                     var segment = formatter.Formatted;
                     using (var memory = new OwnedPinnedBuffer<byte>(segment.Array)) {
-                        connection.TryWrite(memory.AsMemory.Slice(segment.Offset, segment.Count));
+                        connection.TryWrite(memory.Memory.Slice(segment.Offset, segment.Count));
                         connection.Dispose();
                     }
                 };
