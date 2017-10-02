@@ -11,29 +11,55 @@ using System.Text.Utf16;
 namespace System.Text.Utf8
 {
     [DebuggerDisplay("{ToString()}u8")]
-    public partial ref struct Utf8String
+    public partial class Utf8String
     {
-        private readonly ReadOnlySpan<byte> _buffer;
+        private readonly byte[] _buffer;
 
         private const int StringNotFound = -1;
 
-        static Utf8String s_empty => default;
+        static Utf8String s_empty = new Utf8String(string.Empty);
 
         // TODO: Validate constructors, When should we copy? When should we just use the underlying array?
         // TODO: Should we be immutable/readonly?
         public Utf8String(ReadOnlySpan<byte> buffer)
         {
-            _buffer = buffer;
+            //_buffer = buffer.ToArray();
+            byte[] utf8bytes = buffer.ToArray();
+            _buffer = new byte[utf8bytes.Length];
+            for (int i = 0; i < utf8bytes.Length; i++)
+                _buffer[i] = utf8bytes[i];
         }
 
         public Utf8String(byte[] utf8bytes)
         {
-            _buffer = new ReadOnlySpan<byte>(utf8bytes);
+            //_buffer = utf8bytes;
+            _buffer = new byte[utf8bytes.Length];
+            for (int i = 0; i < utf8bytes.Length; i++)
+                _buffer[i] = utf8bytes[i];
         }
 
         public Utf8String(byte[] utf8bytes, int index, int length)
         {
-            _buffer = new ReadOnlySpan<byte>(utf8bytes, index, length);
+            if (index < 0)
+            {
+                throw new ArgumentOutOfRangeException("index");
+            }
+
+            if (length < 0)
+            {
+                // TODO: Should we support that?
+                throw new ArgumentOutOfRangeException("length");
+            }
+
+            if (index + length > utf8bytes.Length)
+            {
+                throw new ArgumentOutOfRangeException("index");
+            }
+
+            // Length checking
+            _buffer = new byte[length];
+            for (int i = 0; i < length; i++)
+                _buffer[i] = utf8bytes[i + index];
         }
 
         public Utf8String(string s)
@@ -45,12 +71,19 @@ namespace System.Text.Utf8
 
             if (s == string.Empty)
             {
-                _buffer = ReadOnlySpan<byte>.Empty;
+                // Might not be correct?
+                _buffer = new byte[0];
             }
             else
             {
-                _buffer = new ReadOnlySpan<byte>(GetUtf8BytesFromString(s));
+                _buffer = GetUtf8BytesFromString(s);
             }
+        }
+
+        // Empty constructor - used to initialize s_empty
+        private Utf8String()
+        {
+            _buffer = new byte[0];
         }
 
         /// <summary>
@@ -111,7 +144,7 @@ namespace System.Text.Utf8
 
         public static implicit operator ReadOnlySpan<byte>(Utf8String utf8)
         {
-            return utf8.Bytes;
+            return utf8.Bytes.AsReadOnlySpan();
         }
 
         public static explicit operator Utf8String(string s)
@@ -124,7 +157,7 @@ namespace System.Text.Utf8
             return s.ToString();
         }
 
-        public ReadOnlySpan<byte> Bytes => _buffer;
+        public byte[] Bytes => _buffer;
 
         public override string ToString()
         {
@@ -149,7 +182,25 @@ namespace System.Text.Utf8
 
         public bool Equals(Utf8String other)
         {
-            return _buffer.SequenceEqual(other._buffer);
+            if(other is null)
+            {
+                return false;
+            }
+
+            if(other.Length != Length)
+            {
+                return false;
+            }
+
+            // Avoid using Arrays.Equals()?
+            for(int i = 0; i < Length; i++)
+            {
+                if(_buffer[i] != other._buffer[i])
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         public bool Equals(string other)
@@ -261,7 +312,7 @@ namespace System.Text.Utf8
                 throw new ArgumentOutOfRangeException("index");
             }
 
-            return new Utf8String(_buffer.Slice(index, length));
+            return new Utf8String(_buffer, index, length);
         }
 
         // TODO: Naive algorithm, reimplement faster
@@ -766,7 +817,7 @@ namespace System.Text.Utf8
         // TODO: Name TBD, CopyArray? GetBytes?
         public byte[] CopyBytes()
         {
-            return _buffer.ToArray();
+            return _buffer;
         }
 
         public byte[] CopyCodeUnits()
