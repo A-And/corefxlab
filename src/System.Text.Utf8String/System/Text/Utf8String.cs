@@ -23,19 +23,12 @@ namespace System.Text.Utf8
         // TODO: Should we be immutable/readonly?
         public Utf8String(ReadOnlySpan<byte> buffer)
         {
-            //_buffer = buffer.ToArray();
-            byte[] utf8bytes = buffer.ToArray();
-            _buffer = new byte[utf8bytes.Length];
-            for (int i = 0; i < utf8bytes.Length; i++)
-                _buffer[i] = utf8bytes[i];
+            _buffer = buffer.ToArray();
         }
 
         public Utf8String(byte[] utf8bytes)
         {
-            //_buffer = utf8bytes;
-            _buffer = new byte[utf8bytes.Length];
-            for (int i = 0; i < utf8bytes.Length; i++)
-                _buffer[i] = utf8bytes[i];
+            _buffer = utf8bytes;
         }
 
         public Utf8String(byte[] utf8bytes, int index, int length)
